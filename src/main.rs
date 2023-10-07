@@ -40,4 +40,27 @@ fn setup(mut commands: Commands) {
     ));
 }
 
-fn move_paddle(input: Res<Input<KeyCode>>, time_step: Res<FixedTime>) {}
+fn move_paddle(
+    input: Res<Input<KeyCode>>,
+    time_step: Res<FixedTime>,
+    mut query: Query<&mut Transform, With<Paddle>>,
+) {
+    let mut paddle_transform = query.single_mut();
+
+    let mut direction = 0.0;
+    if input.pressed(KeyCode::A) {
+        direction -= 1.0;
+    }
+
+    if input.pressed(KeyCode::D) {
+        direction += 1.0;
+    }
+
+    let new_x =
+        paddle_transform.translation.x + direction * PADDLE_SPEED * time_step.period.as_secs_f32();
+
+    paddle_transform.translation.x = new_x;
+}
+
+// https://youtu.be/E9SzRc9HkOg
+// 5.54
