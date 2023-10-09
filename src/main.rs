@@ -2,7 +2,7 @@ use bevy::sprite::collide_aabb::*;
 use bevy::{math::*, prelude::*};
 
 // paddle
-const PADDLE_START_Y: f32 = 0.0;
+const PADDLE_START_Y: f32 = BOTTOM_WALL + 60.0;
 const PADDLE_SIZE: Vec2 = Vec2::new(120.0, 20.0);
 const PADDLE_COLOR: Color = Color::rgb(0.3, 0.3, 0.7);
 const PADDLE_SPEED: f32 = 500.0;
@@ -24,11 +24,26 @@ const WALL_BLOCK_WIDTH: f32 = RIGHT_WALL - LEFT_WALL;
 const WALL_BLOCK_HEIGHT: f32 = TOP_WALL - BOTTOM_WALL;
 const WALL_COLOR: Color = Color::rgb(0.8, 0.8, 0.8);
 
+//bricks
+const BRICK_SIZE: Vec2 = Vec2::new(100., 30.);
+const BRICK_COLOR: Color = Color::rgb(0.5, 0.5, 1.0);
+const GAP_BETWEEN_PADDLE_AND_BRICKS: f32 = 270.0;
+const GAP_BETWEEN_BRICKS: f32 = 5.0;
+const GAP_BETWEEN_BRICKS_AND_CEILING: f32 = 20.0;
+const GAP_BETWEEN_BRICKS_AND_SIDES: f32 = 20.0;
+
+//scoreboard
+const SCOREBOARD_FONT_SIZE: f32 = 40.0;
+const SCOREBOARD_TEXT_PADDING: Val = Val::Px(5.0);
+const TEXT_COLOR: Color = Color::rgb(0.5, 0.5, 1.0);
+const SCORE_COLOR: Color = Color::rgb(1.0, 0.5, 0.5);
+
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .insert_resource(ClearColor(Color::rgb(0.9, 0.9, 0.9)))
-        .add_systems(Update, bevy::window::close_on_esc)
+        .insert_resource(Scoreboard { score: 0 })
+        .add_systems(Update, (bevy::window::close_on_esc, update_scoreboard))
         .add_systems(Startup, setup)
         .add_systems(
             FixedUpdate,
@@ -63,9 +78,24 @@ struct WallBundle {
     collider: Collider,
 }
 
+#[derive(Component)]
+struct Brick;
+
+#[derive(Resource, Clone, Copy)]
+struct Scoreboard {
+    score: usize,
+}
+
+#[derive(Resource, Default, Deref, DerefMut)]
+struct CollisionSound(Handle<AudioSource>);
+
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     // camera
     commands.spawn(Camera2dBundle::default());
+
+    //sound
+    let ball_collision_sound = asset_server.load("sounds/breakout_collision.ogg");
+    commands.insert_resource(CollisionSound(ball_collision_sound));
 
     // paddle
     commands.spawn((
@@ -187,6 +217,67 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             },
         });
     }
+
+    // bricks
+    {
+        let offset_x = LEFT_WALL + GAP_BETWEEN_BRICKS_AND_SIDES + BRICK_SIZE.x * 0.5;
+        let offset_y = BOTTOM_WALL + GAP_BETWEEN_PADDLE_AND_BRICKS + BRICK_SIZE.y * 0.5;
+        let bricks_total_width = (RIGHT_WALL - LEFT_WALL) - 2. * GAP_BETWEEN_BRICKS_AND_SIDES;
+        let bricks_total_height = (TOP_WALL - BOTTOM_WALL)
+            - GAP_BETWEEN_BRICKS_AND_CEILING
+            - GAP_BETWEEN_PADDLE_AND_BRICKS;
+        let rows = (bricks_total_height / (BRICK_SIZE.y + GAP_BETWEEN_BRICKS)).floor() as i32;
+        let columns = (bricks_total_width / (BRICK_SIZE.x + GAP_BETWEEN_BRICKS)).floor() as i32;
+
+        for row in 0..rows {
+            for column in 0..columns {
+                let brick_pos = vec2(
+                    offset_x + column as f32 * (BRICK_SIZE.x + GAP_BETWEEN_BRICKS),
+                    offset_y + row as f32 * (BRICK_SIZE.y + GAP_BETWEEN_BRICKS),
+                );
+
+                commands.spawn((
+                    SpriteBundle {
+                        transform: Transform {
+                            translation: brick_pos.extend(0.),
+                            ..default()
+                        },
+                        sprite: Sprite {
+                            color: BRICK_COLOR,
+                            custom_size: Some(BRICK_SIZE),
+                            ..default()
+                        },
+                        ..default()
+                    },
+                    Brick,
+                    Collider { size: BRICK_SIZE },
+                ));
+            }
+        }
+    }
+
+    //Scoreboard
+    commands.spawn((TextBundle::from_sections([
+        TextSection::new(
+            "Score: ",
+            TextStyle {
+                font_size: SCOREBOARD_FONT_SIZE,
+                color: TEXT_COLOR,
+                ..default()
+            },
+        ),
+        TextSection::from_style(TextStyle {
+            font_size: SCOREBOARD_FONT_SIZE,
+            color: SCORE_COLOR,
+            ..default()
+        }),
+    ])
+    .with_style(Style {
+        position_type: PositionType::Absolute,
+        top: SCOREBOARD_TEXT_PADDING,
+        left: SCOREBOARD_TEXT_PADDING,
+        ..default()
+    }),));
 }
 
 fn move_paddle(
@@ -224,11 +315,14 @@ fn apply_velocity(mut query: Query<(&mut Transform, &Velocity)>, time_step: Res<
 }
 
 fn check_ball_collisions(
+    mut commands: Commands,
+    mut score: ResMut<Scoreboard>,
+    collision_sound: Res<CollisionSound>,
     mut ball_query: Query<(&mut Velocity, &Transform, &Ball)>,
-    collider_query: Query<(&Transform, &Collider)>,
+    collider_query: Query<(Entity, &Transform, &Collider, Option<&Brick>)>,
 ) {
     for (mut ball_velocity, ball_transform, ball) in &mut ball_query {
-        for (transform, other) in &collider_query {
+        for (other_entity, transform, other, opt_brick) in &collider_query {
             let collision = collide(
                 ball_transform.translation,
                 ball.size,
@@ -246,16 +340,32 @@ fn check_ball_collisions(
                     Collision::Bottom => reflect_y = ball_velocity.y > 0.0,
                     Collision::Inside => {}
                 }
-            }
 
-            if reflect_x {
-                ball_velocity.x *= -1.0;
-            }
-            if reflect_y {
-                ball_velocity.y *= -1.0;
+                if reflect_x {
+                    ball_velocity.x *= -1.0;
+                }
+                if reflect_y {
+                    ball_velocity.y *= -1.0;
+                }
+
+                if opt_brick.is_some() {
+                    score.score += 1;
+                    commands.entity(other_entity).despawn();
+                }
+
+                //play sound
+                commands.spawn(AudioBundle {
+                    source: collision_sound.clone(),
+                    settings: PlaybackSettings::DESPAWN,
+                });
             }
         }
     }
+}
+
+fn update_scoreboard(score: Res<Scoreboard>, mut query: Query<&mut Text>) {
+    let mut text = query.single_mut();
+    text.sections[1].value = score.score.to_string();
 }
 
 // https://youtu.be/E9SzRc9HkOg
