@@ -10,4 +10,3 @@ pub(crate) const BALL_INITIAL_DIRECTION: Vec2 = Vec2::new(0.5, -0.5);
 pub(crate) struct Ball {
     pub(crate) size: Vec2,
 }
-

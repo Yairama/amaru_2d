@@ -1,7 +1,11 @@
-use bevy::prelude::{*};
-use bevy::sprite::collide_aabb::*;
-use crate::components::{physics_components::{Velocity, Collider}, ball::Ball, brick::Brick};
+use crate::components::{
+    ball::Ball,
+    brick::Brick,
+    physics_components::{Collider, Velocity},
+};
 use crate::resources::{scoreboard::Scoreboard, sounds::CollisionSound};
+use bevy::prelude::*;
+use bevy::sprite::collide_aabb::*;
 
 pub(crate) fn check_ball_collisions(
     mut commands: Commands,

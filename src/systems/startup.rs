@@ -1,11 +1,13 @@
+use crate::components::{
+    ball::*,
+    brick::*,
+    paddle::*,
+    physics_components::{Collider, Velocity},
+    wall::*,
+};
+use crate::resources::{scoreboard::*, sounds::*};
 use bevy::math::{vec2, vec3};
 use bevy::prelude::*;
-use crate::components::{ball::*,
-                        paddle::*,
-                        physics_components::{Collider, Velocity},
-                        wall::*,
-                        brick::*};
-use crate::resources::{scoreboard::*, sounds::*};
 
 pub(crate) fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     // camera
@@ -190,11 +192,10 @@ pub(crate) fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             ..default()
         }),
     ])
-                        .with_style(Style {
-                            position_type: PositionType::Absolute,
-                            top: SCOREBOARD_TEXT_PADDING,
-                            left: SCOREBOARD_TEXT_PADDING,
-                            ..default()
-                        }),));
+    .with_style(Style {
+        position_type: PositionType::Absolute,
+        top: SCOREBOARD_TEXT_PADDING,
+        left: SCOREBOARD_TEXT_PADDING,
+        ..default()
+    }),));
 }
-

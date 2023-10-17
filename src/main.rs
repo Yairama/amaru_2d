@@ -1,14 +1,13 @@
 mod components;
-mod systems;
 mod resources;
+mod systems;
 
-use bevy::{math::*, prelude::*};
 use crate::resources::scoreboard::Scoreboard;
 use crate::systems::collision::check_ball_collisions;
 use crate::systems::movement::{apply_velocity, move_paddle};
 use crate::systems::scoring::update_scoreboard;
 use crate::systems::startup::setup;
-
+use bevy::prelude::*;
 
 fn main() {
     App::new()
@@ -27,4 +26,3 @@ fn main() {
         )
         .run();
 }
-

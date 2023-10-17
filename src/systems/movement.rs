@@ -1,9 +1,9 @@
-use bevy::prelude::*;
 use crate::components::{
-    paddle::{Paddle, PADDLE_SPEED, PADDLE_SIZE},
+    paddle::{Paddle, PADDLE_SIZE, PADDLE_SPEED},
+    physics_components::Velocity,
     wall::{LEFT_WALL, RIGHT_WALL, WALL_THICKNESS},
-    physics_components::Velocity
 };
+use bevy::prelude::*;
 
 pub(crate) fn move_paddle(
     input: Res<Input<KeyCode>>,
@@ -31,7 +31,10 @@ pub(crate) fn move_paddle(
     paddle_transform.translation.x = new_x;
 }
 
-pub(crate) fn apply_velocity(mut query: Query<(&mut Transform, &Velocity)>, time_step: Res<FixedTime>) {
+pub(crate) fn apply_velocity(
+    mut query: Query<(&mut Transform, &Velocity)>,
+    time_step: Res<FixedTime>,
+) {
     let dt = time_step.period.as_secs_f32();
     for (mut transform, velocity) in &mut query {
         transform.translation.x += velocity.x * dt;

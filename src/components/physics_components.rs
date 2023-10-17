@@ -7,4 +7,3 @@ pub(crate) struct Collider {
 
 #[derive(Component, Deref, DerefMut)]
 pub(crate) struct Velocity(pub(crate) Vec2);
-
