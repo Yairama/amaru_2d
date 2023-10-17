@@ -61,81 +61,13 @@ pub(crate) fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         let vertical_wall_size = vec2(WALL_THICKNESS, WALL_BLOCK_HEIGHT + WALL_THICKNESS);
         let horizontal_wall_size = vec2(WALL_BLOCK_WIDTH + WALL_THICKNESS, WALL_THICKNESS);
 
-        // left walls
-        commands.spawn(WallBundle {
-            sprite_bundle: SpriteBundle {
-                transform: Transform {
-                    translation: vec3(LEFT_WALL, 0., 0.),
-                    ..default()
-                },
-                sprite: Sprite {
-                    color: WALL_COLOR,
-                    custom_size: Some(vertical_wall_size),
-                    ..default()
-                },
-                ..default()
-            },
-            collider: Collider {
-                size: vertical_wall_size,
-            },
-        });
+        // Left and right walls
+        spawn_wall(&mut commands, vec3(LEFT_WALL, 0., 0.), vertical_wall_size);
+        spawn_wall(&mut commands, vec3(RIGHT_WALL, 0., 0.), vertical_wall_size);
 
-        // right wall
-        commands.spawn(WallBundle {
-            sprite_bundle: SpriteBundle {
-                transform: Transform {
-                    translation: vec3(RIGHT_WALL, 0., 0.),
-                    ..default()
-                },
-                sprite: Sprite {
-                    color: WALL_COLOR,
-                    custom_size: Some(vertical_wall_size),
-                    ..default()
-                },
-                ..default()
-            },
-            collider: Collider {
-                size: vertical_wall_size,
-            },
-        });
-
-        // bottom wall
-        commands.spawn(WallBundle {
-            sprite_bundle: SpriteBundle {
-                transform: Transform {
-                    translation: vec3(0., BOTTOM_WALL, 0.),
-                    ..default()
-                },
-                sprite: Sprite {
-                    color: WALL_COLOR,
-                    custom_size: Some(horizontal_wall_size),
-                    ..default()
-                },
-                ..default()
-            },
-            collider: Collider {
-                size: horizontal_wall_size,
-            },
-        });
-
-        // top wall
-        commands.spawn(WallBundle {
-            sprite_bundle: SpriteBundle {
-                transform: Transform {
-                    translation: vec3(0., TOP_WALL, 0.),
-                    ..default()
-                },
-                sprite: Sprite {
-                    color: WALL_COLOR,
-                    custom_size: Some(horizontal_wall_size),
-                    ..default()
-                },
-                ..default()
-            },
-            collider: Collider {
-                size: horizontal_wall_size,
-            },
-        });
+        // Bottom and top walls
+        spawn_wall(&mut commands, vec3(0., BOTTOM_WALL, 0.), horizontal_wall_size);
+        spawn_wall(&mut commands, vec3(0., TOP_WALL, 0.), horizontal_wall_size);
     }
 
     // bricks
@@ -198,4 +130,28 @@ pub(crate) fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         left: SCOREBOARD_TEXT_PADDING,
         ..default()
     }),));
+}
+
+fn spawn_wall(
+    commands: &mut Commands,
+    translation: Vec3,
+    wall_size: Vec2,
+) {
+    commands.spawn(WallBundle {
+        sprite_bundle: SpriteBundle {
+            transform: Transform {
+                translation,
+                ..Default::default()
+            },
+            sprite: Sprite {
+                color: WALL_COLOR,
+                custom_size: Some(wall_size),
+                ..Default::default()
+            },
+            ..Default::default()
+        },
+        collider: Collider {
+            size: wall_size,
+        },
+    });
 }
