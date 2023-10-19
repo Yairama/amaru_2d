@@ -8,6 +8,7 @@ use crate::components::{
 use crate::resources::{scoreboard::*, sounds::*};
 use bevy::math::{vec2, vec3};
 use bevy::prelude::*;
+use rand::Rng;
 
 pub(crate) fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     // camera
@@ -81,12 +82,15 @@ pub(crate) fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         let rows = (bricks_total_height / (BRICK_SIZE.y + GAP_BETWEEN_BRICKS)).floor() as i32;
         let columns = (bricks_total_width / (BRICK_SIZE.x + GAP_BETWEEN_BRICKS)).floor() as i32;
 
+        let mut rng = rand::thread_rng();
+
         for row in 0..rows {
             for column in 0..columns {
                 let brick_pos = vec2(
                     offset_x + column as f32 * (BRICK_SIZE.x + GAP_BETWEEN_BRICKS),
                     offset_y + row as f32 * (BRICK_SIZE.y + GAP_BETWEEN_BRICKS),
                 );
+                let n: i32 = rng.gen_range(0..=10);
 
                 commands.spawn((
                     SpriteBundle {
@@ -95,13 +99,13 @@ pub(crate) fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                             ..default()
                         },
                         sprite: Sprite {
-                            color: BRICK_COLOR,
+                            color: Color::rgb(0.5, (n as f32)/10.0, 0.1),
                             custom_size: Some(BRICK_SIZE),
                             ..default()
                         },
                         ..default()
                     },
-                    Brick,
+                    Brick{health:n},
                     Collider { size: BRICK_SIZE },
                 ));
             }

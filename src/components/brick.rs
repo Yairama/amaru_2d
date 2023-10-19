@@ -9,4 +9,6 @@ pub(crate) const GAP_BETWEEN_BRICKS_AND_CEILING: f32 = 20.0;
 pub(crate) const GAP_BETWEEN_BRICKS_AND_SIDES: f32 = 20.0;
 
 #[derive(Component)]
-pub(crate) struct Brick;
+pub(crate) struct Brick{
+    pub(crate) health: i32
+}
