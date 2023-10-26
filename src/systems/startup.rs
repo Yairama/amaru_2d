@@ -67,7 +67,11 @@ pub(crate) fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         spawn_wall(&mut commands, vec3(RIGHT_WALL, 0., 0.), vertical_wall_size);
 
         // Bottom and top walls
-        spawn_wall(&mut commands, vec3(0., BOTTOM_WALL, 0.), horizontal_wall_size);
+        spawn_wall(
+            &mut commands,
+            vec3(0., BOTTOM_WALL, 0.),
+            horizontal_wall_size,
+        );
         spawn_wall(&mut commands, vec3(0., TOP_WALL, 0.), horizontal_wall_size);
     }
 
@@ -99,13 +103,13 @@ pub(crate) fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                             ..default()
                         },
                         sprite: Sprite {
-                            color: Color::rgb(0.5, (n as f32)/10.0, 0.1),
+                            color: Color::rgb(0.5, (n as f32) / 10.0, 0.1),
                             custom_size: Some(BRICK_SIZE),
                             ..default()
                         },
                         ..default()
                     },
-                    Brick{health:n},
+                    Brick { health: n },
                     Collider { size: BRICK_SIZE },
                 ));
             }
@@ -136,11 +140,7 @@ pub(crate) fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     }),));
 }
 
-fn spawn_wall(
-    commands: &mut Commands,
-    translation: Vec3,
-    wall_size: Vec2,
-) {
+fn spawn_wall(commands: &mut Commands, translation: Vec3, wall_size: Vec2) {
     commands.spawn(WallBundle {
         sprite_bundle: SpriteBundle {
             transform: Transform {
@@ -154,8 +154,6 @@ fn spawn_wall(
             },
             ..Default::default()
         },
-        collider: Collider {
-            size: wall_size,
-        },
+        collider: Collider { size: wall_size },
     });
 }
