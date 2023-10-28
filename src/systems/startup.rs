@@ -9,27 +9,34 @@ use crate::resources::{scoreboard::*, sounds::*};
 use bevy::math::{vec2, vec3};
 use bevy::prelude::*;
 use rand::Rng;
+use bevy::utils::HashMap;
+use crate::resources::textures::PaddleTextures;
 
-pub(crate) fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+
+pub(crate) fn setup(mut commands: Commands, asset_server: Res<AssetServer>, texture_atlases: ResMut<Assets<TextureAtlas>>, mut paddle_textures: ResMut<PaddleTextures>) {
     // camera
     commands.spawn(Camera2dBundle::default());
 
+    // paddle textures
+    let texture_handle = asset_server.load("textures/breakout_assets.png");
+    let texture_atlas =
+        TextureAtlas::new_empty(texture_handle, Vec2::new(767., 511.));
+    let texture_atlas_handle = generate_sprites(texture_atlases, texture_atlas, &mut paddle_textures);//texture_atlases.add(texture_atlas);
+
+    let result = paddle_textures.0.get(&(PaddleSize::M, PaddleColor::Red, PaddleType::Standard)).unwrap();
     //sound
     let ball_collision_sound = asset_server.load("sounds/breakout_collision.ogg");
     commands.insert_resource(CollisionSound(ball_collision_sound));
 
     // paddle
     commands.spawn((
-        SpriteBundle {
+        SpriteSheetBundle {
             transform: Transform {
                 translation: vec3(0., PADDLE_START_Y, 0.0),
                 ..default()
             },
-            sprite: Sprite {
-                color: PADDLE_COLOR,
-                custom_size: Some(PADDLE_SIZE),
-                ..default()
-            },
+            sprite: TextureAtlasSprite::new(result.0),//15-21
+            texture_atlas: texture_atlas_handle,
             ..default()
         },
         Paddle,
@@ -156,4 +163,50 @@ fn spawn_wall(commands: &mut Commands, translation: Vec3, wall_size: Vec2) {
         },
         collider: Collider { size: wall_size },
     });
+}
+
+
+
+// X [> -> paint: if dimension are 10 a 12, use 10 to 13
+// Y [> -> paint: if dimension are 10 a 12, use 10 to 13
+fn generate_sprites(mut texture_atlases: ResMut<Assets<TextureAtlas>>, mut texture_atlas: TextureAtlas, mut paddle_textures: &mut ResMut<PaddleTextures>) -> Handle<TextureAtlas>{
+
+    let size_configs = [
+        (PaddleSize::XS, [0., 32.]),
+        (PaddleSize::S, [40., 88.]),
+        (PaddleSize::M, [96., 160.]),
+        (PaddleSize::L, [168., 248.]),
+        (PaddleSize::XL, [256., 352.]),
+    ];
+
+    let color_configs = [
+        (PaddleColor::Red, ([384., 400.], [400., 416.])),
+        (PaddleColor::Blue, ([416., 432.], [432., 448.])),
+        (PaddleColor::Yellow, ([448., 464.], [464., 480.])),
+        (PaddleColor::Green, ([480., 496.], [496., 512.])),
+    ];
+
+    let type_configs = [
+        (PaddleType::Shooter,0),
+        (PaddleType::Standard,1)
+    ];
+    let mut map: HashMap<(PaddleSize, PaddleColor, PaddleType), (usize, Rect)> = HashMap::new();
+
+    for &(size, size_x) in size_configs.iter() {
+        for &(color, (vec1, vec2)) in color_configs.iter() {
+            for &(typ, index) in type_configs.iter() {
+                let size_y = if index == 0 { vec1 } else { vec2 };
+                let rect = Rect {
+                    min: Vec2::new(size_x[0], size_y[0]),
+                    max: Vec2::new(size_x[1], size_y[1])
+                };
+
+                let texture_index = texture_atlas.add_texture(rect);
+                paddle_textures.0.insert((size, color, typ), (texture_index, rect));
+            }
+        }
+    }
+
+    texture_atlases.add(texture_atlas)
+
 }
