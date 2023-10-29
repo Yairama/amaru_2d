@@ -117,11 +117,11 @@ pub(crate) fn setup(mut commands: Commands,
                             translation: brick_pos.extend(0.),
                             ..default()
                         },
-                        sprite: TextureAtlasSprite::new(50),
+                        sprite: TextureAtlasSprite::new(60),
                         texture_atlas: texture_atlas_handle.clone(),
                         ..default()
                     },
-                    Brick { health: n },
+                    Brick { health: 1 },
                     Collider { size: BRICK_SIZE },
                 ));
             }
@@ -215,28 +215,28 @@ fn generate_paddle_sprites(mut texture_atlas: TextureAtlas, mut paddle_textures:
     texture_atlas
 }
 
-fn add_textures(
+
+fn process_bricks_textures(
     texture_atlas: &mut TextureAtlas,
     brick_textures: &mut ResMut<BrickTextures>,
-    size_configs: &[[f32; 2]],
-    color_configs: &[(BrickColor, [f32; 2])],
-    brick_type: BrickType,
+    color_config: &[(BrickColor, [f32; 2])],
+    size_config: &[[f32; 2]],
+    brick_type: BrickType
 ) {
-    for &(color, vec_y) in color_configs.iter() {
-        for (index, &vec_x) in size_configs.iter().enumerate() {
+    for &(color, vec_y) in color_config.iter() {
+        for (index, &vec_x) in size_config.iter().enumerate() {
             let rect = Rect {
                 min: Vec2::new(vec_x[0], vec_y[0]),
-                max: Vec2::new(vec_x[1], vec_y[1]),
+                max: Vec2::new(vec_x[1], vec_y[1])
             };
-
             let texture_index = texture_atlas.add_texture(rect);
             brick_textures.0.insert((color, brick_type, TextureFrame(index)), (texture_index, rect));
         }
     }
 }
 
-
 fn generate_brick_sprites(mut texture_atlas: TextureAtlas, mut brick_textures: &mut ResMut<BrickTextures>) -> TextureAtlas {
+
     // Bricks
 
     let default_size_config = [[0.,32.], [32.,64.], [64.,96.], [96., 128.], [128.,160.], [160., 192.]];
@@ -253,18 +253,6 @@ fn generate_brick_sprites(mut texture_atlas: TextureAtlas, mut brick_textures: &
         (BrickColor::Blue, [144.,160.])
     ];
 
-    for &(color, vec_y) in default_color_config.iter() {
-        for (index, &vec_x) in default_size_config.iter().enumerate() {
-            let rect = Rect {
-                min: Vec2::new(vec_x[0], vec_y[0]),
-                max: Vec2::new(vec_x[1], vec_y[1])
-            };
-
-            let texture_index = texture_atlas.add_texture(rect);
-            brick_textures.0.insert((color, BrickType::Default, TextureFrame(index)), (texture_index, rect));
-        }
-    }
-
     let two_life_size_config = [[0.,32.],[64.,96.]];
     let three_life_size_config = [[128., 160.], [192., 224.], [256., 288.]];
     let life_color_config = [
@@ -280,25 +268,19 @@ fn generate_brick_sprites(mut texture_atlas: TextureAtlas, mut brick_textures: &
         (BrickColor::Blue, [336.,352.])
     ];
 
-    for &(color, vec_y) in life_color_config.iter() {
-        for (index, &vec_x) in two_life_size_config.iter().enumerate() {
-            let rect = Rect {
-                min: Vec2::new(vec_x[0], vec_y[0]),
-                max: Vec2::new(vec_x[1], vec_y[1])
-            };
-            let texture_index = texture_atlas.add_texture(rect);
-            brick_textures.0.insert((color, BrickType::TwoLife, TextureFrame(index)), (texture_index, rect));
-        }
-
-        for (index, &vec_x) in three_life_size_config.iter().enumerate() {
-            let rect = Rect {
-                min: Vec2::new(vec_x[0], vec_y[0]),
-                max: Vec2::new(vec_x[1], vec_y[1])
-            };
-            let texture_index = texture_atlas.add_texture(rect);
-            brick_textures.0.insert((color, BrickType::ThreeLife, TextureFrame(index)), (texture_index, rect));
-        }
-    }
+    let five_life_size_config = [[448., 512.], [512., 576.], [576., 640.], [640., 704.], [704., 768.]];
+    let five_life_color_config = [
+        (BrickColor::Red, [0.,32.]),
+        (BrickColor::SkyBlue, [32.,64.]),
+        (BrickColor::Green, [64.,96.]),
+        (BrickColor::Orange, [96.,128.]),
+        (BrickColor::Yellow, [128.,160.]),
+        (BrickColor::Purple, [160.,192.]),
+        (BrickColor::White, [192.,224.]),
+        (BrickColor::Brown, [224.,256.]),
+        (BrickColor::Pink, [256.,288.]),
+        (BrickColor::Blue, [288.,320.])
+    ];
 
     let immortal_size_confing = [[320., 352.], [352., 384.]];
     let immortal_color_config = [
@@ -319,31 +301,14 @@ fn generate_brick_sprites(mut texture_atlas: TextureAtlas, mut brick_textures: &
         }
     }
 
-    let five_life_size_config = [[448., 512.], [512., 576.], [576., 640.], [640., 704.], [704., 768.]];
-    let five_life_color_config = [
-        (BrickColor::Red, [0.,32.]),
-        (BrickColor::SkyBlue, [32.,64.]),
-        (BrickColor::Green, [64.,96.]),
-        (BrickColor::Orange, [96.,128.]),
-        (BrickColor::Yellow, [128.,160.]),
-        (BrickColor::Purple, [160.,192.]),
-        (BrickColor::White, [192.,224.]),
-        (BrickColor::Brown, [224.,256.]),
-        (BrickColor::Pink, [256.,288.]),
-        (BrickColor::Blue, [288.,320.])
-    ];
-
-    for &(color, vec_y) in five_life_color_config.iter() {
-        for (index, &vec_x) in five_life_size_config.iter().enumerate() {
-            let rect = Rect {
-                min: Vec2::new(vec_x[0], vec_y[0]),
-                max: Vec2::new(vec_x[1], vec_y[1])
-            };
-
-            let texture_index = texture_atlas.add_texture(rect);
-            brick_textures.0.insert((color, BrickType::FiveLife, TextureFrame(index)), (texture_index, rect));
-        }
-    }
+    // Default Bricks
+    process_bricks_textures(&mut texture_atlas, &mut brick_textures, &default_color_config, &default_size_config, BrickType::Default);
+    // Two Life Bricks
+    process_bricks_textures(&mut texture_atlas, &mut brick_textures, &life_color_config, &two_life_size_config, BrickType::TwoLife);
+    // Three Life Bricks
+    process_bricks_textures(&mut texture_atlas, &mut brick_textures, &life_color_config, &three_life_size_config, BrickType::ThreeLife);
+    // Five Life Bricks
+    process_bricks_textures(&mut texture_atlas, &mut brick_textures, &five_life_color_config, &five_life_size_config, BrickType::FiveLife);
 
     texture_atlas
 }
