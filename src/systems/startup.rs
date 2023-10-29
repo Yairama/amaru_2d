@@ -10,18 +10,26 @@ use bevy::math::{vec2, vec3};
 use bevy::prelude::*;
 use rand::Rng;
 use bevy::utils::HashMap;
-use crate::resources::textures::PaddleTextures;
+use crate::resources::textures::{PaddleTextures, BrickTextures, TextureFrame};
 
 
-pub(crate) fn setup(mut commands: Commands, asset_server: Res<AssetServer>, texture_atlases: ResMut<Assets<TextureAtlas>>, mut paddle_textures: ResMut<PaddleTextures>) {
+pub(crate) fn setup(mut commands: Commands,
+                    asset_server: Res<AssetServer>,
+                    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+                    mut paddle_textures: ResMut<PaddleTextures>,
+                    mut brick_textures: ResMut<BrickTextures>)
+{
     // camera
     commands.spawn(Camera2dBundle::default());
 
     // paddle textures
     let texture_handle = asset_server.load("textures/breakout_assets.png");
-    let texture_atlas =
+    let mut texture_atlas =
         TextureAtlas::new_empty(texture_handle, Vec2::new(767., 511.));
-    let texture_atlas_handle = generate_sprites(texture_atlases, texture_atlas, &mut paddle_textures);//texture_atlases.add(texture_atlas);
+    let mut texture_atlas = generate_paddle_sprites(texture_atlas, &mut paddle_textures);//texture_atlases.add(texture_atlas);
+    texture_atlas = generate_brick_sprites(texture_atlas, &mut brick_textures);
+    let mut texture_atlas_handle = texture_atlases.add(texture_atlas);
+
 
     let result = paddle_textures.0.get(&(PaddleSize::M, PaddleColor::Red, PaddleType::Standard)).unwrap();
     //sound
@@ -36,7 +44,7 @@ pub(crate) fn setup(mut commands: Commands, asset_server: Res<AssetServer>, text
                 ..default()
             },
             sprite: TextureAtlasSprite::new(result.0),//15-21
-            texture_atlas: texture_atlas_handle,
+            texture_atlas: texture_atlas_handle.clone(),
             ..default()
         },
         Paddle,
@@ -101,19 +109,16 @@ pub(crate) fn setup(mut commands: Commands, asset_server: Res<AssetServer>, text
                     offset_x + column as f32 * (BRICK_SIZE.x + GAP_BETWEEN_BRICKS),
                     offset_y + row as f32 * (BRICK_SIZE.y + GAP_BETWEEN_BRICKS),
                 );
-                let n: i32 = rng.gen_range(0..=10);
+                let n: i32 = rng.gen_range(1..=3);
 
                 commands.spawn((
-                    SpriteBundle {
+                    SpriteSheetBundle {
                         transform: Transform {
                             translation: brick_pos.extend(0.),
                             ..default()
                         },
-                        sprite: Sprite {
-                            color: Color::rgb(0.5, (n as f32) / 10.0, 0.1),
-                            custom_size: Some(BRICK_SIZE),
-                            ..default()
-                        },
+                        sprite: TextureAtlasSprite::new(50),
+                        texture_atlas: texture_atlas_handle.clone(),
                         ..default()
                     },
                     Brick { health: n },
@@ -169,8 +174,9 @@ fn spawn_wall(commands: &mut Commands, translation: Vec3, wall_size: Vec2) {
 
 // X [> -> paint: if dimension are 10 a 12, use 10 to 13
 // Y [> -> paint: if dimension are 10 a 12, use 10 to 13
-fn generate_sprites(mut texture_atlases: ResMut<Assets<TextureAtlas>>, mut texture_atlas: TextureAtlas, mut paddle_textures: &mut ResMut<PaddleTextures>) -> Handle<TextureAtlas>{
+fn generate_paddle_sprites(mut texture_atlas: TextureAtlas, mut paddle_textures: &mut ResMut<PaddleTextures>) -> TextureAtlas{
 
+    // paddle
     let size_configs = [
         (PaddleSize::XS, [0., 32.]),
         (PaddleSize::S, [40., 88.]),
@@ -180,20 +186,19 @@ fn generate_sprites(mut texture_atlases: ResMut<Assets<TextureAtlas>>, mut textu
     ];
 
     let color_configs = [
-        (PaddleColor::Red, ([384., 400.], [400., 416.])),
-        (PaddleColor::Blue, ([416., 432.], [432., 448.])),
-        (PaddleColor::Yellow, ([448., 464.], [464., 480.])),
-        (PaddleColor::Green, ([480., 496.], [496., 512.])),
+        (PaddleColor::Red, [[384., 400.], [400., 416.]]),
+        (PaddleColor::Blue, [[416., 432.], [432., 448.]]),
+        (PaddleColor::Yellow, [[448., 464.], [464., 480.]]),
+        (PaddleColor::Green, [[480., 496.], [496., 512.]]),
     ];
 
     let type_configs = [
         (PaddleType::Shooter,0),
         (PaddleType::Standard,1)
     ];
-    let mut map: HashMap<(PaddleSize, PaddleColor, PaddleType), (usize, Rect)> = HashMap::new();
 
     for &(size, size_x) in size_configs.iter() {
-        for &(color, (vec1, vec2)) in color_configs.iter() {
+        for &(color, [vec1, vec2]) in color_configs.iter() {
             for &(typ, index) in type_configs.iter() {
                 let size_y = if index == 0 { vec1 } else { vec2 };
                 let rect = Rect {
@@ -207,6 +212,138 @@ fn generate_sprites(mut texture_atlases: ResMut<Assets<TextureAtlas>>, mut textu
         }
     }
 
-    texture_atlases.add(texture_atlas)
+    texture_atlas
+}
 
+fn add_textures(
+    texture_atlas: &mut TextureAtlas,
+    brick_textures: &mut ResMut<BrickTextures>,
+    size_configs: &[[f32; 2]],
+    color_configs: &[(BrickColor, [f32; 2])],
+    brick_type: BrickType,
+) {
+    for &(color, vec_y) in color_configs.iter() {
+        for (index, &vec_x) in size_configs.iter().enumerate() {
+            let rect = Rect {
+                min: Vec2::new(vec_x[0], vec_y[0]),
+                max: Vec2::new(vec_x[1], vec_y[1]),
+            };
+
+            let texture_index = texture_atlas.add_texture(rect);
+            brick_textures.0.insert((color, brick_type, TextureFrame(index)), (texture_index, rect));
+        }
+    }
+}
+
+
+fn generate_brick_sprites(mut texture_atlas: TextureAtlas, mut brick_textures: &mut ResMut<BrickTextures>) -> TextureAtlas {
+    // Bricks
+
+    let default_size_config = [[0.,32.], [32.,64.], [64.,96.], [96., 128.], [128.,160.], [160., 192.]];
+    let default_color_config = [
+        (BrickColor::Red, [0.,16.]),
+        (BrickColor::SkyBlue, [16.,32.]),
+        (BrickColor::Green, [32.,48.]),
+        (BrickColor::Orange, [48.,64.]),
+        (BrickColor::Yellow, [64.,80.]),
+        (BrickColor::Purple, [80.,96.]),
+        (BrickColor::White, [96.,112.]),
+        (BrickColor::Brown, [112.,128.]),
+        (BrickColor::Pink, [128.,144.]),
+        (BrickColor::Blue, [144.,160.])
+    ];
+
+    for &(color, vec_y) in default_color_config.iter() {
+        for (index, &vec_x) in default_size_config.iter().enumerate() {
+            let rect = Rect {
+                min: Vec2::new(vec_x[0], vec_y[0]),
+                max: Vec2::new(vec_x[1], vec_y[1])
+            };
+
+            let texture_index = texture_atlas.add_texture(rect);
+            brick_textures.0.insert((color, BrickType::Default, TextureFrame(index)), (texture_index, rect));
+        }
+    }
+
+    let two_life_size_config = [[0.,32.],[64.,96.]];
+    let three_life_size_config = [[128., 160.], [192., 224.], [256., 288.]];
+    let life_color_config = [
+        (BrickColor::Red, [192.,208.]),
+        (BrickColor::SkyBlue, [208.,224.]),
+        (BrickColor::Green, [224.,240.]),
+        (BrickColor::Orange, [240.,256.]),
+        (BrickColor::Yellow, [256.,272.]),
+        (BrickColor::Purple, [272.,288.]),
+        (BrickColor::White, [288.,304.]),
+        (BrickColor::Brown, [304.,320.]),
+        (BrickColor::Pink, [320.,336.]),
+        (BrickColor::Blue, [336.,352.])
+    ];
+
+    for &(color, vec_y) in life_color_config.iter() {
+        for (index, &vec_x) in two_life_size_config.iter().enumerate() {
+            let rect = Rect {
+                min: Vec2::new(vec_x[0], vec_y[0]),
+                max: Vec2::new(vec_x[1], vec_y[1])
+            };
+            let texture_index = texture_atlas.add_texture(rect);
+            brick_textures.0.insert((color, BrickType::TwoLife, TextureFrame(index)), (texture_index, rect));
+        }
+
+        for (index, &vec_x) in three_life_size_config.iter().enumerate() {
+            let rect = Rect {
+                min: Vec2::new(vec_x[0], vec_y[0]),
+                max: Vec2::new(vec_x[1], vec_y[1])
+            };
+            let texture_index = texture_atlas.add_texture(rect);
+            brick_textures.0.insert((color, BrickType::ThreeLife, TextureFrame(index)), (texture_index, rect));
+        }
+    }
+
+    let immortal_size_confing = [[320., 352.], [352., 384.]];
+    let immortal_color_config = [
+        ([192., 224.], [BrickColor::Red, BrickColor::Purple]),
+        ([224., 256.], [BrickColor::SkyBlue, BrickColor::White]),
+        ([256., 288.], [BrickColor::Green, BrickColor::Brown]),
+        ([288., 320.], [BrickColor::Orange, BrickColor::Pink]),
+        ([320., 352.], [BrickColor::Yellow, BrickColor::Blue])
+    ];
+    for (index, &vec_x) in immortal_size_confing.iter().enumerate() {
+        for (vec_y, color_array) in immortal_color_config {
+            let rect = Rect {
+                min: Vec2::new(vec_x[0], vec_y[0]),
+                max: Vec2::new(vec_x[1], vec_y[1])
+            };
+            let texture_index = texture_atlas.add_texture(rect);
+            brick_textures.0.insert((color_array[index], BrickType::Immortal, TextureFrame(0)), (texture_index, rect));
+        }
+    }
+
+    let five_life_size_config = [[448., 512.], [512., 576.], [576., 640.], [640., 704.], [704., 768.]];
+    let five_life_color_config = [
+        (BrickColor::Red, [0.,32.]),
+        (BrickColor::SkyBlue, [32.,64.]),
+        (BrickColor::Green, [64.,96.]),
+        (BrickColor::Orange, [96.,128.]),
+        (BrickColor::Yellow, [128.,160.]),
+        (BrickColor::Purple, [160.,192.]),
+        (BrickColor::White, [192.,224.]),
+        (BrickColor::Brown, [224.,256.]),
+        (BrickColor::Pink, [256.,288.]),
+        (BrickColor::Blue, [288.,320.])
+    ];
+
+    for &(color, vec_y) in five_life_color_config.iter() {
+        for (index, &vec_x) in five_life_size_config.iter().enumerate() {
+            let rect = Rect {
+                min: Vec2::new(vec_x[0], vec_y[0]),
+                max: Vec2::new(vec_x[1], vec_y[1])
+            };
+
+            let texture_index = texture_atlas.add_texture(rect);
+            brick_textures.0.insert((color, BrickType::FiveLife, TextureFrame(index)), (texture_index, rect));
+        }
+    }
+
+    texture_atlas
 }
