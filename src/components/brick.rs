@@ -1,7 +1,4 @@
 use bevy::prelude::*;
-use bevy::utils::HashMap;
-use crate::resources::textures::TextureFrame;
-
 
 //bricks
 pub(crate) const BRICK_SIZE: Vec2 = Vec2::new(32., 16.);
@@ -21,27 +18,20 @@ pub(crate) enum BrickColor {
     White,
     Brown,
     Pink,
-    Blue
+    Blue,
 }
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
-pub(crate) enum BrickType{
+pub(crate) enum BrickType {
     Default,
     TwoLife,
     ThreeLife,
     FiveLife,
-    Immortal
+    Immortal,
 }
 
 #[derive(Component, Reflect, Default)]
 #[reflect(Component)]
 pub(crate) struct Brick {
     pub(crate) health: i32,
-}
-
-fn generate_brick_sprites(){
-
-
-
-
 }

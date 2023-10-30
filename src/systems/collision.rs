@@ -61,10 +61,10 @@ pub(crate) fn check_ball_collisions(
                 }
 
                 //play sound
-                // commands.spawn(AudioBundle {
-                //     source: collision_sound.clone(),
-                //     settings: PlaybackSettings::DESPAWN,
-                // });
+                commands.spawn(AudioBundle {
+                    source: collision_sound.clone(),
+                    settings: PlaybackSettings::DESPAWN,
+                });
             }
         }
     }

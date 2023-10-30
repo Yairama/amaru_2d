@@ -2,14 +2,17 @@ mod components;
 mod resources;
 mod systems;
 
-use crate::resources::{scoreboard::Scoreboard, textures::{PaddleTextures, BrickTextures, BallTextures}};
+use crate::resources::{
+    scoreboard::Scoreboard,
+    textures::{BallTextures, BrickTextures, PaddleTextures},
+};
 use crate::systems::collision::check_ball_collisions;
 use crate::systems::movement::{apply_velocity, move_paddle};
 use crate::systems::scoring::update_scoreboard;
 use crate::systems::startup::setup;
 use bevy::prelude::*;
-use bevy_editor_pls::EditorPlugin;
 use bevy::utils::HashMap;
+use bevy_editor_pls::EditorPlugin;
 
 fn main() {
     App::new()
