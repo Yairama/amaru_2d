@@ -10,14 +10,15 @@ use bevy::math::{vec2, vec3};
 use bevy::prelude::*;
 use rand::Rng;
 use bevy::utils::HashMap;
-use crate::resources::textures::{PaddleTextures, BrickTextures, TextureFrame};
+use crate::resources::textures::{PaddleTextures, BrickTextures, TextureFrame, BallTextures};
 
 
 pub(crate) fn setup(mut commands: Commands,
                     asset_server: Res<AssetServer>,
                     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
                     mut paddle_textures: ResMut<PaddleTextures>,
-                    mut brick_textures: ResMut<BrickTextures>)
+                    mut brick_textures: ResMut<BrickTextures>,
+                    mut ball_textures: ResMut<BallTextures>)
 {
     // camera
     commands.spawn(Camera2dBundle::default());
@@ -27,7 +28,8 @@ pub(crate) fn setup(mut commands: Commands,
     let mut texture_atlas =
         TextureAtlas::new_empty(texture_handle, Vec2::new(767., 511.));
     let mut texture_atlas = generate_paddle_sprites(texture_atlas, &mut paddle_textures);//texture_atlases.add(texture_atlas);
-    texture_atlas = generate_brick_sprites(texture_atlas, &mut brick_textures);
+    texture_atlas = generate_brick_textures(texture_atlas, &mut brick_textures);
+    texture_atlas = generate_ball_textures(texture_atlas, &mut ball_textures);
     let mut texture_atlas_handle = texture_atlases.add(texture_atlas);
 
 
@@ -51,21 +53,16 @@ pub(crate) fn setup(mut commands: Commands,
         Collider { size: PADDLE_SIZE },
     ));
 
-    let ball_texture = asset_server.load("textures/circle.png");
 
     //ball
     commands.spawn((
-        SpriteBundle {
+        SpriteSheetBundle {
             transform: Transform {
                 translation: BALL_STARTING_POSITION,
                 ..default()
             },
-            sprite: Sprite {
-                color: BALL_COLOR,
-                custom_size: Some(BALL_SIZE),
-                ..default()
-            },
-            texture: ball_texture,
+            sprite: TextureAtlasSprite::new(210),
+            texture_atlas: texture_atlas_handle.clone(),
             ..default()
         },
         Ball { size: BALL_SIZE },
@@ -235,7 +232,7 @@ fn process_bricks_textures(
     }
 }
 
-fn generate_brick_sprites(mut texture_atlas: TextureAtlas, mut brick_textures: &mut ResMut<BrickTextures>) -> TextureAtlas {
+fn generate_brick_textures(mut texture_atlas: TextureAtlas, mut brick_textures: &mut ResMut<BrickTextures>) -> TextureAtlas {
 
     // Bricks
 
@@ -309,6 +306,40 @@ fn generate_brick_sprites(mut texture_atlas: TextureAtlas, mut brick_textures: &
     process_bricks_textures(&mut texture_atlas, &mut brick_textures, &life_color_config, &three_life_size_config, BrickType::ThreeLife);
     // Five Life Bricks
     process_bricks_textures(&mut texture_atlas, &mut brick_textures, &five_life_color_config, &five_life_size_config, BrickType::FiveLife);
+
+    texture_atlas
+}
+
+fn generate_ball_textures(mut texture_atlas: TextureAtlas, mut ball_textures: &mut ResMut<BallTextures>) -> TextureAtlas{
+
+    let size_config = [[384., 400.], [400., 416.]];
+    let color_config = [
+        ([384., 400.] ,[BallType::Red, BallType::SkyBlue]),
+        ([400., 416.] ,[BallType::Green, BallType::Orange]),
+        ([416., 432.] ,[BallType::Yellow, BallType::Purple]),
+        ([432., 448.] ,[BallType::White, BallType::Brown]),
+        ([448., 464.] ,[BallType::Pink, BallType::Blue]),
+        ([464., 480.] ,[BallType::Ghost, BallType::Explosive]),
+    ];
+
+    for (index, &vec_x) in size_config.iter().enumerate() {
+        for (vec_y, color_array) in color_config {
+            let rect = Rect {
+                min: Vec2::new(vec_x[0], vec_y[0]),
+                max: Vec2::new(vec_x[1], vec_y[1])
+            };
+            let texture_index = texture_atlas.add_texture(rect);
+            ball_textures.0.insert(color_array[index], (texture_index, rect));
+        }
+    }
+
+    // adding giant ball
+    let giant_rect = Rect{
+        min: Vec2::new(384., 480.),
+        max: Vec2::new(416., 512.)
+    };
+    let giant_index = texture_atlas.add_texture(giant_rect);
+    ball_textures.0.insert(BallType::Giant, (giant_index, giant_rect));
 
     texture_atlas
 }
