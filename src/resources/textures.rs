@@ -19,3 +19,14 @@ pub(crate) struct BallTextures(pub(crate) HashMap<BallType, (usize, Rect)>);
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
 pub(crate) struct TextureFrame(pub(crate) usize);
+
+pub struct TexturesPlugin;
+
+impl Plugin for TexturesPlugin{
+    fn build(&self, app: &mut App) {
+        app
+            .insert_resource(PaddleTextures(HashMap::new()))
+            .insert_resource(BrickTextures(HashMap::new()))
+            .insert_resource(BallTextures(HashMap::new()));
+    }
+}
