@@ -1,14 +1,9 @@
-use crate::components::{
-    ball::*,
-    brick::*,
-    paddle::*,
-    physics_components::{Collider, Velocity},
-    wall::*,
-};
+use crate::components::{ball::*, brick::*, paddle::*, wall::*};
 use crate::resources::textures::{BallTextures, BrickTextures, PaddleTextures, TextureFrame};
 use crate::resources::{scoreboard::*, sounds::*};
 use bevy::math::{vec2, vec3};
 use bevy::prelude::*;
+use bevy_rapier2d::prelude::*;
 
 pub(crate) fn setup(
     mut commands: Commands,
@@ -48,8 +43,12 @@ pub(crate) fn setup(
             texture_atlas: texture_atlas_handle.clone(),
             ..default()
         },
+        // RigidBody::KinematicPositionBased,
+        Restitution::coefficient(1.0),
         Paddle,
-        Collider { size: PADDLE_SIZE },
+        Friction::coefficient(0.0),
+        Collider::cuboid(PADDLE_SIZE.x / 2., PADDLE_SIZE.y / 2.),
+        Ccd::enabled(),
     ));
 
     //ball
@@ -63,8 +62,18 @@ pub(crate) fn setup(
             texture_atlas: texture_atlas_handle.clone(),
             ..default()
         },
+        RigidBody::Dynamic,
         Ball { size: BALL_SIZE },
-        Velocity(BALL_SPEED * BALL_INITIAL_DIRECTION),
+        Restitution::coefficient(1.0),
+        Collider::ball(BALL_SIZE.x / 2.0),
+        Velocity {
+            linvel: BALL_SPEED * BALL_INITIAL_DIRECTION,
+            angvel: 0.0,
+        },
+        Friction::coefficient(0.0),
+        GravityScale(0.0),
+        Ccd::enabled(),
+        ActiveEvents::COLLISION_EVENTS,
     ));
 
     // walls
@@ -114,7 +123,10 @@ pub(crate) fn setup(
                         ..default()
                     },
                     Brick { health: 1 },
-                    Collider { size: BRICK_SIZE },
+                    Friction::coefficient(0.0),
+                    Restitution::coefficient(1.0),
+                    Collider::cuboid(BRICK_SIZE.x / 2., BRICK_SIZE.y / 2.),
+                    RigidBody::Fixed,
                 ));
             }
         }
@@ -145,21 +157,26 @@ pub(crate) fn setup(
 }
 
 fn spawn_wall(commands: &mut Commands, translation: Vec3, wall_size: Vec2) {
-    commands.spawn(WallBundle {
-        sprite_bundle: SpriteBundle {
-            transform: Transform {
-                translation,
+    commands.spawn((
+        WallBundle {
+            sprite_bundle: SpriteBundle {
+                transform: Transform {
+                    translation,
+                    ..Default::default()
+                },
+                sprite: Sprite {
+                    color: WALL_COLOR,
+                    custom_size: Some(wall_size),
+                    ..Default::default()
+                },
                 ..Default::default()
             },
-            sprite: Sprite {
-                color: WALL_COLOR,
-                custom_size: Some(wall_size),
-                ..Default::default()
-            },
-            ..Default::default()
         },
-        collider: Collider { size: wall_size },
-    });
+        Restitution::coefficient(1.0),
+        Friction::coefficient(0.0),
+        Collider::cuboid(wall_size.x / 2., wall_size.y / 2.),
+        RigidBody::Fixed,
+    ));
 }
 
 // X [> -> paint: if dimension are 10 a 12, use 10 to 13

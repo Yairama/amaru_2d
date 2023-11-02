@@ -32,6 +32,6 @@ pub(crate) enum BrickType {
 
 #[derive(Component, Reflect, Default)]
 #[reflect(Component)]
-pub(crate) struct Brick {
-    pub(crate) health: i32,
+pub struct Brick {
+    pub health: i32,
 }
