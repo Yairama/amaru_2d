@@ -43,10 +43,10 @@ pub(crate) fn setup(
             texture_atlas: texture_atlas_handle.clone(),
             ..default()
         },
-        // RigidBody::KinematicPositionBased,
-        Restitution::coefficient(1.0),
+        RigidBody::KinematicPositionBased,
+        Restitution::coefficient(1.1),
         Paddle,
-        Friction::coefficient(0.0),
+        Friction::coefficient(0.1),
         Collider::cuboid(PADDLE_SIZE.x / 2., PADDLE_SIZE.y / 2.),
         Ccd::enabled(),
     ));
