@@ -1,5 +1,5 @@
-use crate::components::brick::Brick;
 use crate::components::ball::{Ball, BALL_SPEED};
+use crate::components::brick::Brick;
 use crate::resources::scoreboard::Scoreboard;
 use crate::resources::sounds::CollisionSound;
 use bevy::prelude::*;
@@ -15,14 +15,11 @@ pub fn check_ball_collisions(
 ) {
     for collision_event in collision_events.iter() {
         match collision_event {
-            CollisionEvent::Started(_ball, _entity, _) => {
-
-            }
+            CollisionEvent::Started(_ball, _entity, _) => {}
             CollisionEvent::Stopped(ball, entity, _) => {
-
-                if let Ok((mut velocity,_)) = query_ball.get_mut(*ball) {
+                if let Ok((mut velocity, _)) = query_ball.get_mut(*ball) {
                     if velocity.linvel.length() != BALL_SPEED {
-                        velocity.linvel = velocity.linvel.normalize()*BALL_SPEED;
+                        velocity.linvel = velocity.linvel.normalize() * BALL_SPEED;
                     }
                 }
 
@@ -33,11 +30,11 @@ pub fn check_ball_collisions(
                         score.score += 1;
                     }
                 }
-                // commands.spawn(AudioBundle {
-                //     source: collision_sound.clone(),
-                //     settings: PlaybackSettings::DESPAWN,
-                // });
-                // println!("Received collision event: {:?}", entity);
+                commands.spawn(AudioBundle {
+                    source: collision_sound.clone(),
+                    settings: PlaybackSettings::DESPAWN,
+                });
+                println!("Received collision event: {:?}", entity);
             }
         }
     }

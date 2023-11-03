@@ -22,7 +22,7 @@ fn main() {
         ))
         .add_plugins((
             RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0),
-            RapierDebugRenderPlugin::default(),
+            // RapierDebugRenderPlugin::default(),
         ))
         .insert_resource(Msaa::Sample4)
         .insert_resource(ClearColor(Color::rgb(0.9, 0.9, 0.9)))
