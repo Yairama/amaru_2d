@@ -30,10 +30,10 @@ pub fn check_ball_collisions(
                         score.score += 1;
                     }
                 }
-                commands.spawn(AudioBundle {
-                    source: collision_sound.clone(),
-                    settings: PlaybackSettings::DESPAWN,
-                });
+                // commands.spawn(AudioBundle {
+                //     source: collision_sound.clone(),
+                //     settings: PlaybackSettings::DESPAWN,
+                // });
                 println!("Received collision event: {:?}", entity);
             }
         }

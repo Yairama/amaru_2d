@@ -8,12 +8,12 @@ pub(crate) const PADDLE_SIZE: Vec2 = Vec2::new(64.0, 16.0);
 pub(crate) const PADDLE_SPEED: f32 = 500.0;
 
 pub const PADDLE_SHAPE: [Vect; 6] = [
-    Vect::new(-10., 8.),
-    Vect::new(10., 8.),
-    Vect::new(32., 2.),
+    Vect::new(-12., 8.), // x -> Plain zone
+    Vect::new(12., 8.), // x -> Plain zone
+    Vect::new(32., 2.), // y -> limit of diagonal zone
     Vect::new(32., -8.),
     Vect::new(-32., -8.),
-    Vect::new(-32., 2.),
+    Vect::new(-32., 2.), // y -> limit of diagonal zone
 ];
 
 pub const PADDLE_INDICES: [[u32; 2]; 6] = [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 0]];
@@ -39,11 +39,6 @@ pub(crate) enum PaddleSize {
     M,
     L,
     XL,
-}
-
-#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
-pub(crate) struct PaddleSprite {
-    pub(crate) index: usize,
 }
 
 #[derive(Component)]
