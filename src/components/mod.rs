@@ -5,8 +5,8 @@ use bevy::app::{App, Plugin};
 pub mod ball;
 pub mod brick;
 pub mod paddle;
-pub mod wall;
 pub mod powerup;
+pub mod wall;
 
 pub struct RegisterPlugin;
 

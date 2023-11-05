@@ -4,7 +4,7 @@ mod systems;
 
 use crate::resources::{scoreboard::Scoreboard, textures::TexturesPlugin};
 
-use crate::systems::collision::check_ball_collisions;
+use crate::systems::collision::{check_ball_collisions, check_powerups_collisions};
 use crate::systems::movement::move_paddle_with_mouse;
 use crate::systems::scoring::update_scoreboard;
 use crate::systems::startup::setup;
@@ -29,6 +29,13 @@ fn main() {
         .insert_resource(Scoreboard { score: 0 })
         .add_systems(Update, (bevy::window::close_on_esc, update_scoreboard))
         .add_systems(Startup, setup)
-        .add_systems(FixedUpdate, (move_paddle_with_mouse, check_ball_collisions))
+        .add_systems(
+            FixedUpdate,
+            (
+                move_paddle_with_mouse,
+                check_ball_collisions,
+                check_powerups_collisions,
+            ),
+        )
         .run();
 }

@@ -1,3 +1,4 @@
+use crate::components::powerup::PowerUp;
 use crate::components::{ball::*, brick::*, paddle::*, wall::*};
 use crate::resources::textures::{BallTextures, BrickTextures, PaddleTextures, TextureFrame};
 use crate::resources::{scoreboard::*, sounds::*};
@@ -122,6 +123,7 @@ pub(crate) fn setup(
                         ..default()
                     },
                     Brick { health: 1 },
+                    PowerUp::BallFire,
                     Friction::coefficient(0.0),
                     Restitution::coefficient(1.0),
                     Collider::cuboid(BRICK_SIZE.x / 2., BRICK_SIZE.y / 2.),

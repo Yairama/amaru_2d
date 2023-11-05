@@ -9,8 +9,8 @@ pub(crate) const PADDLE_SPEED: f32 = 500.0;
 
 pub const PADDLE_SHAPE: [Vect; 6] = [
     Vect::new(-12., 8.), // x -> Plain zone
-    Vect::new(12., 8.), // x -> Plain zone
-    Vect::new(32., 2.), // y -> limit of diagonal zone
+    Vect::new(12., 8.),  // x -> Plain zone
+    Vect::new(32., 2.),  // y -> limit of diagonal zone
     Vect::new(32., -8.),
     Vect::new(-32., -8.),
     Vect::new(-32., 2.), // y -> limit of diagonal zone
@@ -42,4 +42,4 @@ pub(crate) enum PaddleSize {
 }
 
 #[derive(Component)]
-pub(crate) struct Paddle;
+pub struct Paddle;
