@@ -9,14 +9,12 @@ use crate::systems::movement::move_paddle_with_mouse;
 use crate::systems::scoring::update_scoreboard;
 use crate::systems::startup::setup;
 use bevy::prelude::*;
-use bevy_editor_pls::EditorPlugin;
 use bevy_rapier2d::prelude::*;
 
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugins((
-            EditorPlugin::default(),
             components::RegisterPlugin,
             TexturesPlugin,
         ))
