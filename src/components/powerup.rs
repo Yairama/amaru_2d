@@ -12,12 +12,35 @@ struct PowerUpState {
     paddle_type: PaddleType,
     paddle_size: PaddleSize,
     paddle_color: PaddleColor,
-    ball_type: BallType,
+    ball_type: BallType
 }
 
 #[derive(Component, Debug, PartialEq, Eq, Hash, Clone, Copy)]
 pub enum PowerUp {
-    BallFire,
-    BallIce,
-    BallNature,
+    BallRed,
+    BallSkyBlue,
+    BallGreen,
+    BallOrange,
+    BallYellow,
+    BallPurple,
+    BallWhite,
+    BallBrown,
+    BallPink,
+    BallBlue,
+    BallGhost,
+    BallExplosive,
+    BallGiant,
+    PaddleXS,
+    PaddleS,
+    PaddleM,
+    PaddleL,
+    PaddleXL,
+    PaddleShooter,
+    PaddleStandard,
+    PaddleRed,
+    PaddleBlue,
+    PaddleYellow,
+    PaddleGreen,
+    SpawnFiveBalls,
+    DuplicateBalls
 }

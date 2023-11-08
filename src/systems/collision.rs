@@ -7,7 +7,6 @@ use crate::components::powerup::{
 use crate::resources::scoreboard::Scoreboard;
 use crate::resources::sounds::CollisionSound;
 use bevy::prelude::*;
-use bevy_rapier2d::parry::simba::scalar::SupersetOf;
 use bevy_rapier2d::prelude::*;
 
 pub fn check_ball_collisions(
@@ -62,10 +61,10 @@ pub fn check_ball_collisions(
                     }
                 }
 
-                commands.spawn(AudioBundle {
-                    source: collision_sound.clone(),
-                    settings: PlaybackSettings::DESPAWN,
-                });
+                // commands.spawn(AudioBundle {
+                //     source: collision_sound.clone(),
+                //     settings: PlaybackSettings::DESPAWN,
+                // });
                 println!("Received collision event: {:?}", entity_2);
             }
         }
