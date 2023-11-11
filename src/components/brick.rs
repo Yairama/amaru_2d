@@ -8,7 +8,7 @@ pub(crate) const GAP_BETWEEN_BRICKS_AND_CEILING: f32 = 20.0;
 pub(crate) const GAP_BETWEEN_BRICKS_AND_SIDES: f32 = 20.0;
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
-pub(crate) enum BrickColor {
+pub enum BrickColor {
     Red,
     SkyBlue,
     Green,
@@ -22,7 +22,7 @@ pub(crate) enum BrickColor {
 }
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
-pub(crate) enum BrickType {
+pub enum BrickType {
     Default,
     TwoLife,
     ThreeLife,

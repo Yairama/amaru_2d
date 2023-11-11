@@ -7,7 +7,7 @@ pub(crate) const BALL_SPEED: f32 = 300.0;
 pub(crate) const BALL_INITIAL_DIRECTION: Vec2 = Vec2::new(0.5, -0.5);
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
-pub(crate) enum BallType {
+pub enum BallType {
     Red,
     SkyBlue,
     Green,

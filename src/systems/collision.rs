@@ -17,9 +17,9 @@ pub fn check_ball_collisions(
     collision_sound: Res<CollisionSound>,
     mut score: ResMut<Scoreboard>,
 ) {
-    for collision_event in collision_events.iter() {
+    for collision_event in collision_events.read() {
         match collision_event {
-            CollisionEvent::Started(entity_1, entity_2, _) => {}
+            CollisionEvent::Started(_entity_1, _entity_2, _) => {}
             CollisionEvent::Stopped(entity_1, entity_2, _) => {
                 if let Ok(mut velocity) = query_ball.get_mut(*entity_1) {
                     if velocity.linvel.length() != BALL_SPEED {
@@ -61,10 +61,10 @@ pub fn check_ball_collisions(
                     }
                 }
 
-                // commands.spawn(AudioBundle {
-                //     source: collision_sound.clone(),
-                //     settings: PlaybackSettings::DESPAWN,
-                // });
+                commands.spawn(AudioBundle {
+                    source: collision_sound.clone(),
+                    settings: PlaybackSettings::DESPAWN,
+                });
                 println!("Received collision event: {:?}", entity_2);
             }
         }
@@ -77,16 +77,16 @@ pub fn check_powerups_collisions(
     mut query_powerup: Query<&PowerUp>,
     mut query_paddle: Query<&TextureAtlasSprite, With<Paddle>>,
 ) {
-    for collision_event in collision_events.iter() {
+    for collision_event in collision_events.read() {
         match collision_event {
             CollisionEvent::Started(entity_1, entity_2, _) => {
-                if let Ok(powerup) = query_powerup.get_mut(*entity_2) {
-                    if let Ok(paddle_sprite) = query_paddle.get_mut(*entity_1) {
+                if let Ok(_powerup) = query_powerup.get_mut(*entity_2) {
+                    if let Ok(_paddle_sprite) = query_paddle.get_mut(*entity_1) {
                         commands.entity(*entity_2).despawn();
                     }
                 }
             }
-            CollisionEvent::Stopped(entity_1, entity_2, _) => {}
+            CollisionEvent::Stopped(_entity_1, _entity_2, _) => {}
         }
     }
 }

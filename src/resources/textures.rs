@@ -5,27 +5,31 @@ use bevy::prelude::*;
 use bevy::utils::HashMap;
 
 #[derive(Resource)]
-pub(crate) struct PaddleTextures(
-    pub(crate) HashMap<(PaddleSize, PaddleColor, PaddleType), (usize, Rect)>,
-);
+pub struct PaddleTextures(pub HashMap<(PaddleSize, PaddleColor, PaddleType), (usize, Rect)>);
 
 #[derive(Resource)]
-pub(crate) struct BrickTextures(
-    pub(crate) HashMap<(BrickColor, BrickType, TextureFrame), (usize, Rect)>,
-);
+pub struct BrickTextures(pub HashMap<(BrickColor, BrickType, TextureFrame), (usize, Rect)>);
 
 #[derive(Resource)]
-pub(crate) struct BallTextures(pub(crate) HashMap<BallType, (usize, Rect)>);
+pub struct BallTextures(pub HashMap<BallType, (usize, Rect)>);
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
-pub(crate) struct TextureFrame(pub(crate) usize);
+pub struct TextureFrame(pub usize);
 
-pub struct TexturesPlugin;
+#[derive(Resource)]
+pub struct PaddleAtlasHandler(pub Handle<TextureAtlas>);
 
-impl Plugin for TexturesPlugin {
-    fn build(&self, app: &mut App) {
-        app.insert_resource(PaddleTextures(HashMap::new()))
-            .insert_resource(BrickTextures(HashMap::new()))
-            .insert_resource(BallTextures(HashMap::new()));
-    }
+#[derive(Resource)]
+pub struct BallAtlasHandler(pub Handle<TextureAtlas>);
+
+#[derive(Resource)]
+pub struct BrickAtlasHandler(pub Handle<TextureAtlas>);
+
+#[derive(Resource)]
+pub struct PowerUpHandler(pub Handle<TextureAtlas>);
+
+#[derive(Resource)]
+pub struct TexturesHandler {
+    pub general_textures: Handle<Image>,
+    pub food_textures: Handle<Image>,
 }
