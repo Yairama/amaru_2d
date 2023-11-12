@@ -1,9 +1,11 @@
+use bevy::ecs::bundle::DynamicBundle;
 use crate::components::ball::*;
 use crate::components::brick::*;
 use crate::components::paddle::*;
 use crate::resources::textures::*;
 use bevy::prelude::*;
 use bevy::utils::HashMap;
+use crate::components::powerup::PowerUp;
 
 pub struct TexturesPlugin;
 impl Plugin for TexturesPlugin {
@@ -15,6 +17,7 @@ impl Plugin for TexturesPlugin {
                     generate_paddle_sprites,
                     generate_brick_textures,
                     generate_ball_textures,
+                    generate_food_textures
                 ),
             );
     }
@@ -32,6 +35,7 @@ pub fn load_image_textures(mut commands: Commands, asset_server: Res<AssetServer
     commands.insert_resource(PaddleTextures(HashMap::new()));
     commands.insert_resource(BrickTextures(HashMap::new()));
     commands.insert_resource(BallTextures(HashMap::new()));
+    commands.insert_resource(FoodTextures(HashMap::new()));
 }
 
 pub fn generate_paddle_sprites(
@@ -277,4 +281,30 @@ pub fn generate_ball_textures(
 
     let handler = texture_atlases.add(texture_atlas);
     commands.insert_resource(BallAtlasHandler(handler));
+}
+
+pub fn generate_food_textures(
+    mut commands: Commands,
+    textures_handler: ResMut<TexturesHandler>,
+    mut food_textures: ResMut<FoodTextures>,
+    mut texture_atlases: ResMut<Assets<TextureAtlas>>
+) {
+    let texture_atlas = TextureAtlas::from_grid(
+        textures_handler.food_textures.clone(),
+        Vec2::new(16.0, 16.0),
+        8,
+        8,
+        None,
+        None
+    );
+
+    let powerup_array = PowerUp::get_array();
+
+    for (index, powerup) in powerup_array.iter().enumerate() {
+        food_textures.0.insert(*powerup, index);
+    }
+
+    let handler = texture_atlases.add(texture_atlas);
+    commands.insert_resource(PowerUpHandler(handler))
+
 }

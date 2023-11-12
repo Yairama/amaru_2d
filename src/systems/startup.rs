@@ -23,6 +23,7 @@ pub(crate) fn setup(
         .unwrap();
 
     // paddle
+
     commands.spawn((
         SpriteSheetBundle {
             transform: Transform {
@@ -36,7 +37,7 @@ pub(crate) fn setup(
         Restitution::coefficient(1.0),
         Paddle,
         Friction::coefficient(0.0),
-        Collider::polyline(PADDLE_SHAPE.to_vec(), Some(PADDLE_INDICES.to_vec())),
+        Collider::polyline(PaddleSize::M.get_shape().to_vec(), Some(PADDLE_INDICES.to_vec())),
         Ccd::enabled(),
     ));
 
