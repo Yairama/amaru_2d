@@ -4,7 +4,6 @@ use bevy_rapier2d::prelude::Vect;
 
 // paddle
 pub(crate) const PADDLE_START_Y: f32 = BOTTOM_WALL + 60.0;
-pub(crate) const PADDLE_SIZE: Vec2 = Vec2::new(64.0, 16.0);
 
 pub const PADDLE_INDICES: [[u32; 2]; 5] = [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5]];
 
@@ -31,15 +30,15 @@ pub enum PaddleSize {
     XL,
 }
 
-impl PaddleSize{
+impl PaddleSize {
     pub fn get_shape(self) -> [Vect; 6] {
         match self {
             PaddleSize::XS => {
                 [
                     Vect::new(-16., -8.),
                     Vect::new(-16., 2.), // y -> limit of diagonal zone
-                    Vect::new(-6., 8.), // x -> Plain zone
-                    Vect::new(6., 8.),  // x -> Plain zone
+                    Vect::new(-6., 8.),  // x -> Plain zone
+                    Vect::new(6., 8.),   // x -> Plain zone
                     Vect::new(16., 2.),  // y -> limit of diagonal zone
                     Vect::new(16., -8.),
                 ]
@@ -48,8 +47,8 @@ impl PaddleSize{
                 [
                     Vect::new(-24., -8.),
                     Vect::new(-24., 2.), // y -> limit of diagonal zone
-                    Vect::new(-9., 8.), // x -> Plain zone
-                    Vect::new(9., 8.),  // x -> Plain zone
+                    Vect::new(-9., 8.),  // x -> Plain zone
+                    Vect::new(9., 8.),   // x -> Plain zone
                     Vect::new(24., 2.),  // y -> limit of diagonal zone
                     Vect::new(24., -8.),
                 ]

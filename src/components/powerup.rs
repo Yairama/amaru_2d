@@ -6,11 +6,9 @@ use rand::{
     Rng,
 };
 
-pub(crate) const POWERUP_SIZE: Vec3 = Vec3::new(16., 16., 0.);
-pub(crate) const TEMP_PADDLE_COLOR: Color = Color::rgb(0.3, 0.3, 0.7);
+pub(crate) const POWERUP_HALF_SIZE: Vec2 = Vec2::new(8., 8.);
 pub(crate) const POWERUP_SPEED: f32 = 50.0;
 pub(crate) const POWERUP_DIRECTION: Vec2 = Vec2::new(0.0, -1.0);
-
 
 #[derive(Event)]
 pub struct PowerUpBallEvent;
@@ -56,8 +54,8 @@ pub enum PowerUp {
     DuplicateBalls,
 }
 
-impl PowerUp{
-    pub fn get_array() -> [PowerUp;26]{
+impl PowerUp {
+    pub fn get_array() -> [PowerUp; 26] {
         [
             PowerUp::BallRed,
             PowerUp::BallSkyBlue,
@@ -84,7 +82,7 @@ impl PowerUp{
             PowerUp::PaddleYellow,
             PowerUp::PaddleGreen,
             PowerUp::SpawnFiveBalls,
-            PowerUp::DuplicateBalls
+            PowerUp::DuplicateBalls,
         ]
     }
 }

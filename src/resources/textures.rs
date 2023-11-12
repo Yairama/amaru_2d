@@ -1,9 +1,9 @@
 use crate::components::ball::BallType;
 use crate::components::brick::{BrickColor, BrickType};
 use crate::components::paddle::*;
+use crate::components::powerup::PowerUp;
 use bevy::prelude::*;
 use bevy::utils::HashMap;
-use crate::components::powerup::PowerUp;
 
 #[derive(Resource)]
 pub struct PaddleTextures(pub HashMap<(PaddleSize, PaddleColor, PaddleType), (usize, Rect)>);

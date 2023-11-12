@@ -1,11 +1,10 @@
-use bevy::ecs::bundle::DynamicBundle;
 use crate::components::ball::*;
 use crate::components::brick::*;
 use crate::components::paddle::*;
+use crate::components::powerup::PowerUp;
 use crate::resources::textures::*;
 use bevy::prelude::*;
 use bevy::utils::HashMap;
-use crate::components::powerup::PowerUp;
 
 pub struct TexturesPlugin;
 impl Plugin for TexturesPlugin {
@@ -17,7 +16,7 @@ impl Plugin for TexturesPlugin {
                     generate_paddle_sprites,
                     generate_brick_textures,
                     generate_ball_textures,
-                    generate_food_textures
+                    generate_food_textures,
                 ),
             );
     }
@@ -287,7 +286,7 @@ pub fn generate_food_textures(
     mut commands: Commands,
     textures_handler: ResMut<TexturesHandler>,
     mut food_textures: ResMut<FoodTextures>,
-    mut texture_atlases: ResMut<Assets<TextureAtlas>>
+    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
 ) {
     let texture_atlas = TextureAtlas::from_grid(
         textures_handler.food_textures.clone(),
@@ -295,7 +294,7 @@ pub fn generate_food_textures(
         8,
         8,
         None,
-        None
+        None,
     );
 
     let powerup_array = PowerUp::get_array();
@@ -306,5 +305,4 @@ pub fn generate_food_textures(
 
     let handler = texture_atlases.add(texture_atlas);
     commands.insert_resource(PowerUpHandler(handler))
-
 }

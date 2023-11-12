@@ -1,12 +1,15 @@
-use crate::components::ball::{Ball, BALL_SIZE, BALL_SPEED, BallType};
+use crate::components::ball::{Ball, BallType, BALL_SIZE, BALL_SPEED};
 use crate::components::brick::Brick;
-use crate::components::paddle::{Paddle, PADDLE_INDICES, PaddleColor, PaddleSize, PaddleType};
-use crate::components::powerup::{PowerUp, POWERUP_DIRECTION, POWERUP_SIZE, POWERUP_SPEED, PowerUpBallEvent, PowerUpPaddleEvent, PowerUpState, TEMP_PADDLE_COLOR};
+use crate::components::paddle::{Paddle, PaddleColor, PaddleSize, PaddleType, PADDLE_INDICES};
+use crate::components::powerup::{
+    PowerUp, PowerUpBallEvent, PowerUpPaddleEvent, PowerUpState, POWERUP_DIRECTION,
+    POWERUP_HALF_SIZE, POWERUP_SPEED,
+};
 use crate::resources::scoreboard::Scoreboard;
 use crate::resources::sounds::CollisionSound;
+use crate::resources::textures::{BallTextures, FoodTextures, PaddleTextures, PowerUpHandler};
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
-use crate::resources::textures::{BallTextures, FoodTextures, PaddleTextures, PowerUpHandler};
 
 pub fn check_ball_collisions(
     mut commands: Commands,
@@ -40,7 +43,9 @@ pub fn check_ball_collisions(
                                         ..default()
                                     },
                                     texture_atlas: power_up_handler.0.clone(),
-                                    sprite: TextureAtlasSprite::new(*food_textures.0.get(powerup).unwrap()),
+                                    sprite: TextureAtlasSprite::new(
+                                        *food_textures.0.get(powerup).unwrap(),
+                                    ),
                                     ..default()
                                 },
                                 RigidBody::Dynamic,
@@ -48,7 +53,7 @@ pub fn check_ball_collisions(
                                     linvel: POWERUP_SPEED * POWERUP_DIRECTION,
                                     angvel: 0.0,
                                 },
-                                Collider::cuboid(8.0, 8.0),
+                                Collider::cuboid(POWERUP_HALF_SIZE.x, POWERUP_HALF_SIZE.y),
                                 Sensor,
                                 ActiveEvents::COLLISION_EVENTS,
                                 *powerup,
@@ -63,7 +68,7 @@ pub fn check_ball_collisions(
                 //     source: collision_sound.clone(),
                 //     settings: PlaybackSettings::DESPAWN,
                 // });
-                println!("Received collision event: {:?}", entity_2);
+                // println!("Received collision event: {:?}", entity_2);
             }
         }
     }
@@ -85,7 +90,7 @@ pub fn check_powerups_collisions(
                     if let Ok(_paddle_sprite) = query_paddle.get_mut(*entity_1) {
                         fill_powerup_states(
                             powerup,
-                            &mut *power_up_state,
+                            &mut power_up_state,
                             &mut power_up_ball_event,
                             &mut power_up_paddle_event,
                         );
@@ -98,7 +103,6 @@ pub fn check_powerups_collisions(
     }
 }
 
-
 fn fill_powerup_states(
     powerup: &PowerUp,
     power_up_state: &mut PowerUpState,
@@ -107,9 +111,8 @@ fn fill_powerup_states(
 ) {
     use PowerUp::*;
     match powerup {
-        BallRed | BallSkyBlue | BallGreen | BallOrange | BallYellow | BallPurple
-        | BallWhite | BallBrown | BallPink | BallBlue | BallGhost | BallExplosive
-        | BallGiant => {
+        BallRed | BallSkyBlue | BallGreen | BallOrange | BallYellow | BallPurple | BallWhite
+        | BallBrown | BallPink | BallBlue | BallGhost | BallExplosive | BallGiant => {
             let ball_type = match powerup {
                 BallRed => BallType::Red,
                 BallSkyBlue => BallType::SkyBlue,
@@ -170,38 +173,44 @@ fn fill_powerup_states(
 }
 
 pub fn apply_ball_powerup(
-    mut commands: Commands,
-    mut power_up_state: ResMut<PowerUpState>,
+    power_up_state: Res<PowerUpState>,
     mut power_up_ball_event: EventReader<PowerUpBallEvent>,
     ball_textures: Res<BallTextures>,
     mut query_balls: Query<(&mut TextureAtlasSprite, &mut Collider), With<Ball>>,
-)
-{
-    for _powerup in power_up_ball_event.read(){
+) {
+    for _powerup in power_up_ball_event.read() {
         for (mut ball_sprite, mut collider) in query_balls.iter_mut() {
             if power_up_state.ball_type == BallType::Giant {
-                *collider = Collider::ball(BALL_SIZE.x );
+                *collider = Collider::ball(BALL_SIZE.x);
             } else {
-                *collider = Collider::ball(BALL_SIZE.x/2.0 );
+                *collider = Collider::ball(BALL_SIZE.x / 2.0);
             }
             ball_sprite.index = ball_textures.0.get(&power_up_state.ball_type).unwrap().0;
         }
     }
-
 }
 
 pub fn apply_paddle_powerup(
-    mut commands: Commands,
-    mut power_up_state: ResMut<PowerUpState>,
+    power_up_state: Res<PowerUpState>,
     mut power_up_paddle_event: EventReader<PowerUpPaddleEvent>,
     paddle_textures: Res<PaddleTextures>,
     mut query_paddle: Query<(&mut TextureAtlasSprite, &mut Collider), With<Paddle>>,
-){
-    for _powerup in power_up_paddle_event.read(){
+) {
+    for _powerup in power_up_paddle_event.read() {
         for (mut paddle_sprite, mut collider) in query_paddle.iter_mut() {
-            *collider = Collider::polyline(power_up_state.paddle_size.get_shape().to_vec(), Some(PADDLE_INDICES.to_vec()));
-            paddle_sprite.index = paddle_textures.0.get(&(power_up_state.paddle_size, power_up_state.paddle_color, power_up_state.paddle_type)).unwrap().0;
-
+            *collider = Collider::polyline(
+                power_up_state.paddle_size.get_shape().to_vec(),
+                Some(PADDLE_INDICES.to_vec()),
+            );
+            paddle_sprite.index = paddle_textures
+                .0
+                .get(&(
+                    power_up_state.paddle_size,
+                    power_up_state.paddle_color,
+                    power_up_state.paddle_type,
+                ))
+                .unwrap()
+                .0;
         }
     }
 }

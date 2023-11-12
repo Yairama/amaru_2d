@@ -1,9 +1,9 @@
+use crate::components::powerup::PowerUpState;
 use crate::components::{
-    paddle::{Paddle, PADDLE_SIZE},
+    paddle::Paddle,
     wall::{LEFT_WALL, RIGHT_WALL, WALL_THICKNESS},
 };
 use bevy::prelude::*;
-use crate::components::powerup::PowerUpState;
 
 pub(crate) fn move_paddle_with_mouse(
     mut query: Query<&mut Transform, With<Paddle>>,
